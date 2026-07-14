@@ -74,6 +74,17 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <div className={save.settings.reducedMotion ? 'atmosphere atmosphere-reduced' : 'atmosphere'} aria-hidden="true">
+        <div className="atmosphere-rays" />
+        <div className="atmosphere-fog" />
+        <div className="embers">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <span key={i} className="ember" />
+          ))}
+        </div>
+        <div className="atmosphere-vignette" />
+      </div>
+
       {screen === 'menu' && (
         <Menu
           gold={save.gold}
