@@ -29,7 +29,7 @@ export default function Settings({ settings, onSettingsChange, onResetProgress, 
             onChange={(e) => onSettingsChange({ ...settings, reducedMotion: e.target.checked })}
           />
         </label>
-        <p className="settings-description">Shortens animations during battles and pack openings.</p>
+        <p className="settings-description">Shortens animations during battles, pack openings, and the background atmosphere.</p>
       </section>
 
       <section className="settings-section">
@@ -58,7 +58,7 @@ export default function Settings({ settings, onSettingsChange, onResetProgress, 
         )}
       </section>
 
-      <p className="settings-version">Card Battler · Phase 1 Foundation</p>
+      <p className="settings-version">Hollow Sigil · Phase 2</p>
     </div>
   );
 }
