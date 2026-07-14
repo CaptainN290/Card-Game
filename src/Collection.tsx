@@ -135,7 +135,11 @@ export default function Collection({ collection, deck, onDeckChange, onBack }: C
       {inspectedCard && (
         <div className="modal-backdrop" onClick={() => setInspectedCard(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <p className={`inspect-rarity inspect-rarity-${inspectedCard.rarity.toLowerCase()}`}>
+              {inspectedCard.rarity} · {inspectedCard.tribe}
+            </p>
             <Card card={inspectedCard} ownedCount={collection[inspectedCard.id]} />
+            <p className="inspect-owned">Owned: {collection[inspectedCard.id] ?? 0}</p>
             {canAddToDeck(inspectedCard.id) && (
               <button
                 className="btn btn-primary"
