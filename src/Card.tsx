@@ -19,6 +19,29 @@ interface CardProps {
   onClick?: () => void;
 }
 
+/** Simple hand-drawn sword mark - deliberately built from straight polygons
+ * (no bezier paths) so it renders identically everywhere, unlike an emoji
+ * glyph whose look varies by OS. */
+function SwordIcon() {
+  return (
+    <svg className="stat-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <polygon points="12,1 15,15 12,17 9,15" />
+      <rect x="7" y="15" width="10" height="2" rx="1" />
+      <rect x="11" y="17" width="2" height="5" />
+      <circle cx="12" cy="23" r="1.4" />
+    </svg>
+  );
+}
+
+/** Shield mark for health, same straight-line-only construction as the sword. */
+function ShieldIcon() {
+  return (
+    <svg className="stat-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <polygon points="12,2 19,5 19,12 12,22 5,12 5,5" />
+    </svg>
+  );
+}
+
 export default function Card({
   card,
   variant = 'full',
@@ -76,8 +99,14 @@ export default function Card({
         </>
       )}
       <div className="card-stats">
-        <span className="card-attack">⚔ {card.attack}</span>
-        <span className={isDamaged ? 'card-health card-health-damaged' : 'card-health'}>♥ {displayHealth}</span>
+        <span className="stat-pill card-attack">
+          <SwordIcon />
+          {card.attack}
+        </span>
+        <span className={isDamaged ? 'stat-pill card-health card-health-damaged' : 'stat-pill card-health'}>
+          <ShieldIcon />
+          {displayHealth}
+        </span>
       </div>
     </>
   );
