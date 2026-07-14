@@ -3,11 +3,17 @@
 // combat resolves -> back to player. All actual game rules live in
 // battle.ts; this file is purely about presenting that state and pacing it
 // with small delays so combat is readable instead of instant.
+//
+// Phase 2 note: the only thing added here beyond presentation is reading the
+// richer `events` array battle.ts now returns from endTurn() - that's just
+// more detail about combat that already happened (for damage numbers and the
+// dissolve effect), not a change to what happens.
 
 import { useEffect, useRef, useState } from 'react';
 import type { BattleReward, BattleState, BoardLane, Side } from './types';
 import { endTurn, initBattle, planAIMoves, playCard } from './battle';
 import { AI_DECK, getCardById, rollGoldReward, rollNewCardReward } from './cards';
+import { playAttack, playCardPlay, playDefeat, playVictory } from './sound';
 import Card from './Card';
 
 interface BoardProps {
@@ -15,6 +21,14 @@ interface BoardProps {
   ownedCardIds: string[];
   reducedMotion: boolean;
   onBattleEnd: (result: 'win' | 'loss', reward?: BattleReward) => void;
+}
+
+interface FloatingDamage {
+  id: string;
+  side: Side;
+  lane: number;
+  amount: number;
+  kind: 'face' | 'lane';
 }
 
 function renderLaneContent(monster: BoardLane) {
@@ -29,6 +43,8 @@ export default function Board({ playerDeck, ownedCardIds, reducedMotion, onBattl
   const [selectedHandCard, setSelectedHandCard] = useState<string | null>(null);
   const [isResolving, setIsResolving] = useState(false);
   const [flashLanes, setFlashLanes] = useState<{ side: Side; lanes: number[] } | null>(null);
+  const [dissolvingLanes, setDissolvingLanes] = useState<{ side: Side; lane: number }[]>([]);
+  const [floatingDamage, setFloatingDamage] = useState<FloatingDamage[]>([]);
   const [showLog, setShowLog] = useState(false);
   const timeoutsRef = useRef<number[]>([]);
 
@@ -45,13 +61,39 @@ export default function Board({ playerDeck, ownedCardIds, reducedMotion, onBattl
   }
 
   function handleEndTurnResolution(state: BattleState) {
-    const { state: newState, attackedLanes } = endTurn(state);
-    setFlashLanes({ side: state.activeSide, lanes: attackedLanes });
+    const { state: newState, attackedLanes, events } = endTurn(state);
+    const attackerSide = state.activeSide;
+    const defenderSide: Side = attackerSide === 'player' ? 'enemy' : 'player';
+
+    const floaters: FloatingDamage[] = [];
+    const dissolves: { side: Side; lane: number }[] = [];
+
+    events.forEach((event, index) => {
+      if (event.isFaceDamage) {
+        floaters.push({ id: `f${index}`, side: defenderSide, lane: event.lane, amount: event.damageToDefender, kind: 'face' });
+      } else {
+        floaters.push({ id: `d${index}`, side: defenderSide, lane: event.lane, amount: event.damageToDefender, kind: 'lane' });
+        if (event.damageToAttacker > 0) {
+          floaters.push({ id: `a${index}`, side: attackerSide, lane: event.lane, amount: event.damageToAttacker, kind: 'lane' });
+        }
+        if (event.defenderDestroyed) dissolves.push({ side: defenderSide, lane: event.lane });
+        if (event.attackerDestroyed) dissolves.push({ side: attackerSide, lane: event.lane });
+      }
+    });
+
+    if (events.length > 0) playAttack();
+
+    setFlashLanes({ side: attackerSide, lanes: attackedLanes });
+    setDissolvingLanes(dissolves);
+    setFloatingDamage(floaters);
+
     scheduleTimeout(() => {
       setBattle(newState);
       setFlashLanes(null);
+      setDissolvingLanes([]);
+      setFloatingDamage([]);
       setIsResolving(false);
-    }, 500);
+    }, 700);
   }
 
   function runAITurn() {
@@ -96,6 +138,7 @@ export default function Board({ playerDeck, ownedCardIds, reducedMotion, onBattl
     if (result.success) {
       setBattle(result.state);
       setSelectedHandCard(null);
+      playCardPlay();
     }
   }
 
@@ -106,12 +149,19 @@ export default function Board({ playerDeck, ownedCardIds, reducedMotion, onBattl
     handleEndTurnResolution(battle);
   }
 
+  function findFloater(side: Side, lane: number, kind: 'face' | 'lane') {
+    return floatingDamage.find((f) => f.side === side && f.lane === lane && f.kind === kind);
+  }
+
   return (
     <div className="screen battle-screen">
       <div className="hp-energy-row enemy-row">
         <span className="side-label">Enemy</span>
         <div className="hp-bar-track">
           <div className="hp-bar-fill hp-bar-enemy" style={{ width: `${(battle.enemy.hp / battle.enemy.maxHp) * 100}%` }} />
+          {findFloater('enemy', -1, 'face') && (
+            <span className="damage-number-face">-{findFloater('enemy', -1, 'face')?.amount}</span>
+          )}
         </div>
         <span className="hp-value">
           {battle.enemy.hp}/{battle.enemy.maxHp}
@@ -124,9 +174,12 @@ export default function Board({ playerDeck, ownedCardIds, reducedMotion, onBattl
             key={i}
             className={`lane-slot ${monster ? 'lane-occupied' : 'lane-empty'} ${
               flashLanes?.side === 'enemy' && flashLanes.lanes.includes(i) ? 'lane-attacking' : ''
-            }`}
+            } ${dissolvingLanes.some((d) => d.side === 'enemy' && d.lane === i) ? 'lane-dissolving' : ''}`}
           >
             {renderLaneContent(monster)}
+            {findFloater('enemy', i, 'lane') && (
+              <span className="damage-number">-{findFloater('enemy', i, 'lane')?.amount}</span>
+            )}
           </div>
         ))}
       </div>
@@ -148,10 +201,13 @@ export default function Board({ playerDeck, ownedCardIds, reducedMotion, onBattl
               key={i}
               className={`lane-slot ${monster ? 'lane-occupied' : 'lane-empty'} ${isTargetable ? 'lane-targetable' : ''} ${
                 flashLanes?.side === 'player' && flashLanes.lanes.includes(i) ? 'lane-attacking' : ''
-              }`}
+              } ${dissolvingLanes.some((d) => d.side === 'player' && d.lane === i) ? 'lane-dissolving' : ''}`}
               onClick={() => handleLaneTap(i)}
             >
               {renderLaneContent(monster)}
+              {findFloater('player', i, 'lane') && (
+                <span className="damage-number">-{findFloater('player', i, 'lane')?.amount}</span>
+              )}
             </div>
           );
         })}
@@ -164,6 +220,9 @@ export default function Board({ playerDeck, ownedCardIds, reducedMotion, onBattl
             className="hp-bar-fill hp-bar-player"
             style={{ width: `${(battle.player.hp / battle.player.maxHp) * 100}%` }}
           />
+          {findFloater('player', -1, 'face') && (
+            <span className="damage-number-face">-{findFloater('player', -1, 'face')?.amount}</span>
+          )}
         </div>
         <span className="hp-value">
           {battle.player.hp}/{battle.player.maxHp}
@@ -238,6 +297,13 @@ interface BattleEndOverlayProps {
 
 function BattleEndOverlay({ won, ownedCardIds, onChooseReward, onContinueAfterLoss }: BattleEndOverlayProps) {
   const [resolved, setResolved] = useState<BattleReward | null>(null);
+
+  useEffect(() => {
+    if (won) playVictory();
+    else playDefeat();
+    // Fire once when the overlay first mounts for this outcome.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!won) {
     return (
