@@ -9,10 +9,11 @@
 import { useEffect, useState } from 'react';
 import type { BattleReward, GameScreen, GameSettings, SaveData } from './types';
 import { loadSave, resetSave, writeSave } from './save';
-import { CARD_DATABASE, DECK_SIZE } from './cards';
+import { BASIC_PACK_PRICE, CARD_DATABASE, DECK_SIZE } from './cards';
 import Menu from './Menu';
 import Board from './Board';
 import Collection from './Collection';
+import Shop from './Shop';
 import Settings from './Settings';
 import PackOpening from './PackOpening';
 
@@ -72,6 +73,16 @@ export default function App() {
     setScreen('menu');
   }
 
+  function handleBuyPack() {
+    if (save.gold < BASIC_PACK_PRICE) return; // Shop already disables the button in this case.
+    setSave((prev) => ({
+      ...prev,
+      gold: prev.gold - BASIC_PACK_PRICE,
+      packsUnopened: prev.packsUnopened + 1,
+    }));
+    setScreen('packOpening');
+  }
+
   return (
     <div className="app-shell">
       <div className={save.settings.reducedMotion ? 'atmosphere atmosphere-reduced' : 'atmosphere'} aria-hidden="true">
@@ -94,6 +105,7 @@ export default function App() {
           packsUnopened={save.packsUnopened}
           onPlay={handlePlay}
           onCollection={() => setScreen('collection')}
+          onShop={() => setScreen('shop')}
           onSettings={() => setScreen('settings')}
           onOpenPacks={() => setScreen('packOpening')}
         />
@@ -116,6 +128,8 @@ export default function App() {
           onBack={() => setScreen('menu')}
         />
       )}
+
+      {screen === 'shop' && <Shop gold={save.gold} onBuyPack={handleBuyPack} onBack={() => setScreen('menu')} />}
 
       {screen === 'settings' && (
         <Settings
