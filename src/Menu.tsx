@@ -8,6 +8,7 @@ interface MenuProps {
   packsUnopened: number;
   onPlay: () => void;
   onCollection: () => void;
+  onShop: () => void;
   onSettings: () => void;
   onOpenPacks: () => void;
 }
@@ -48,6 +49,7 @@ export default function Menu({
   packsUnopened,
   onPlay,
   onCollection,
+  onShop,
   onSettings,
   onOpenPacks,
 }: MenuProps) {
@@ -80,6 +82,9 @@ export default function Menu({
 
         <button className="btn btn-secondary btn-large" onClick={onCollection}>
           Collection
+        </button>
+        <button className="btn btn-secondary btn-large" onClick={onShop}>
+          Shop
         </button>
         <button className="btn btn-secondary btn-large" onClick={onSettings}>
           Settings
