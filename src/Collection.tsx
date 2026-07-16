@@ -3,7 +3,7 @@
 // your collection" instead of a separate destination.
 
 import { useMemo, useState } from 'react';
-import type { CardDefinition } from './types';
+import type { CardDefinition, Tribe } from './types';
 import { CARD_DATABASE, DECK_SIZE, MAX_COPIES_PER_CARD, getCardById } from './cards';
 import Card from './Card';
 
@@ -15,6 +15,9 @@ interface CollectionProps {
 }
 
 type CollectionTab = 'collection' | 'deck';
+type TribeFilter = 'All' | Tribe;
+
+const TRIBE_FILTERS: TribeFilter[] = ['All', 'Beast', 'Dragon', 'Machine', 'Mage', 'Undead'];
 
 function countByCardId(cardIds: string[]): Record<string, number> {
   const counts: Record<string, number> = {};
@@ -26,10 +29,16 @@ function countByCardId(cardIds: string[]): Record<string, number> {
 
 export default function Collection({ collection, deck, onDeckChange, onBack }: CollectionProps) {
   const [tab, setTab] = useState<CollectionTab>('collection');
+  const [tribeFilter, setTribeFilter] = useState<TribeFilter>('All');
   const [inspectedCard, setInspectedCard] = useState<CardDefinition | null>(null);
 
   const deckCounts = useMemo(() => countByCardId(deck), [deck]);
   const unlockedCount = Object.keys(collection).length;
+
+  const filteredCards = useMemo(
+    () => (tribeFilter === 'All' ? CARD_DATABASE : CARD_DATABASE.filter((c) => c.tribe === tribeFilter)),
+    [tribeFilter],
+  );
 
   function canAddToDeck(cardId: string): boolean {
     const owned = collection[cardId] ?? 0;
@@ -68,13 +77,25 @@ export default function Collection({ collection, deck, onDeckChange, onBack }: C
         </button>
       </div>
 
+      <div className="tribe-filter-bar">
+        {TRIBE_FILTERS.map((t) => (
+          <button
+            key={t}
+            className={t === tribeFilter ? 'tribe-chip tribe-chip-active' : 'tribe-chip'}
+            onClick={() => setTribeFilter(t)}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
       {tab === 'collection' && (
         <div className="tab-panel">
           <p className="collection-progress">
             {unlockedCount}/{CARD_DATABASE.length} cards unlocked
           </p>
           <div className="card-grid">
-            {CARD_DATABASE.map((card) => {
+            {filteredCards.map((card) => {
               const owned = collection[card.id] ?? 0;
               return (
                 <Card
@@ -93,7 +114,7 @@ export default function Collection({ collection, deck, onDeckChange, onBack }: C
       {tab === 'deck' && (
         <div className="tab-panel">
           <p className={deck.length === DECK_SIZE ? 'deck-size deck-size-complete' : 'deck-size'}>
-            Deck: {deck.length}/{DECK_SIZE}
+            Deck: {deck.length} / {DECK_SIZE}
           </p>
 
           <div className="deck-list">
@@ -116,18 +137,20 @@ export default function Collection({ collection, deck, onDeckChange, onBack }: C
 
           <h2 className="section-subtitle">Add Cards</h2>
           <div className="card-grid">
-            {CARD_DATABASE.filter((c) => (collection[c.id] ?? 0) > 0).map((card) => {
-              const owned = collection[card.id] ?? 0;
-              return (
-                <Card
-                  key={card.id}
-                  card={card}
-                  ownedCount={owned}
-                  disabled={!canAddToDeck(card.id)}
-                  onClick={() => addToDeck(card.id)}
-                />
-              );
-            })}
+            {filteredCards
+              .filter((c) => (collection[c.id] ?? 0) > 0)
+              .map((card) => {
+                const owned = collection[card.id] ?? 0;
+                return (
+                  <Card
+                    key={card.id}
+                    card={card}
+                    ownedCount={owned}
+                    disabled={!canAddToDeck(card.id)}
+                    onClick={() => addToDeck(card.id)}
+                  />
+                );
+              })}
           </div>
         </div>
       )}
