@@ -155,17 +155,19 @@ export default function Board({ playerDeck, ownedCardIds, reducedMotion, onBattl
 
   return (
     <div className="screen battle-screen">
-      <div className="hp-energy-row enemy-row">
-        <span className="side-label">Enemy</span>
-        <div className="hp-bar-track">
-          <div className="hp-bar-fill hp-bar-enemy" style={{ width: `${(battle.enemy.hp / battle.enemy.maxHp) * 100}%` }} />
-          {findFloater('enemy', -1, 'face') && (
-            <span className="damage-number-face">-{findFloater('enemy', -1, 'face')?.amount}</span>
-          )}
+      <div className="enemy-status">
+        <div className="hp-energy-row enemy-row">
+          <span className="side-label">Enemy</span>
+          <div className="hp-bar-track">
+            <div className="hp-bar-fill hp-bar-enemy" style={{ width: `${(battle.enemy.hp / battle.enemy.maxHp) * 100}%` }} />
+            {findFloater('enemy', -1, 'face') && (
+              <span className="damage-number-face">-{findFloater('enemy', -1, 'face')?.amount}</span>
+            )}
+          </div>
+          <span className="hp-value">
+            {battle.enemy.hp}/{battle.enemy.maxHp}
+          </span>
         </div>
-        <span className="hp-value">
-          {battle.enemy.hp}/{battle.enemy.maxHp}
-        </span>
       </div>
 
       <div className="lane-row">
@@ -213,26 +215,28 @@ export default function Board({ playerDeck, ownedCardIds, reducedMotion, onBattl
         })}
       </div>
 
-      <div className="hp-energy-row player-row">
-        <span className="side-label">You</span>
-        <div className="hp-bar-track">
-          <div
-            className="hp-bar-fill hp-bar-player"
-            style={{ width: `${(battle.player.hp / battle.player.maxHp) * 100}%` }}
-          />
-          {findFloater('player', -1, 'face') && (
-            <span className="damage-number-face">-{findFloater('player', -1, 'face')?.amount}</span>
-          )}
+      <div className="player-status">
+        <div className="hp-energy-row player-row">
+          <span className="side-label">You</span>
+          <div className="hp-bar-track">
+            <div
+              className="hp-bar-fill hp-bar-player"
+              style={{ width: `${(battle.player.hp / battle.player.maxHp) * 100}%` }}
+            />
+            {findFloater('player', -1, 'face') && (
+              <span className="damage-number-face">-{findFloater('player', -1, 'face')?.amount}</span>
+            )}
+          </div>
+          <span className="hp-value">
+            {battle.player.hp}/{battle.player.maxHp}
+          </span>
         </div>
-        <span className="hp-value">
-          {battle.player.hp}/{battle.player.maxHp}
-        </span>
-      </div>
 
-      <div className="energy-pips">
-        {Array.from({ length: battle.player.maxEnergy }).map((_, i) => (
-          <span key={i} className={i < battle.player.energy ? 'pip pip-filled' : 'pip'} />
-        ))}
+        <div className="energy-pips">
+          {Array.from({ length: battle.player.maxEnergy }).map((_, i) => (
+            <span key={i} className={i < battle.player.energy ? 'pip pip-filled' : 'pip'} />
+          ))}
+        </div>
       </div>
 
       <div className="hand-row">
