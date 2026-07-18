@@ -524,14 +524,14 @@ h3 {
 
 .victory-backdrop {
   background-color: rgba(4, 4, 6, 0.9);
-  background-image: linear-gradient(180deg, rgba(4, 4, 6, 0.55) 0%, rgba(4, 4, 6, 0.75) 100%), url('/images/victory-background.jpg');
+  background-image: linear-gradient(180deg, rgba(4, 4, 6, 0.55) 0%, rgba(4, 4, 6, 0.75) 100%), url('/images/victory-background.jpeg');
   background-size: cover;
   background-position: center;
 }
 
 .defeat-backdrop {
   background-color: rgba(4, 4, 6, 0.9);
-  background-image: linear-gradient(180deg, rgba(4, 4, 6, 0.6) 0%, rgba(4, 4, 6, 0.8) 100%), url('/images/defeat-background.jpg');
+  background-image: linear-gradient(180deg, rgba(4, 4, 6, 0.6) 0%, rgba(4, 4, 6, 0.8) 100%), url('/images/defeat-background.jpeg');
   background-size: cover;
   background-position: center;
 }
@@ -856,7 +856,7 @@ button.card:active:not(:disabled) {
   justify-content: space-between;
   background-color: var(--void);
   background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.55) 0%, rgba(8, 9, 12, 0.72) 55%, rgba(8, 9, 12, 0.92) 100%),
-    url('/images/menu-background.jpg');
+    url('/images/menu-background.jpeg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -987,7 +987,7 @@ button.card:active:not(:disabled) {
 
 .collection-screen {
   background-color: var(--charcoal);
-  background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.6) 0%, rgba(8, 9, 12, 0.82) 70%), url('/images/collection-background.jpg');
+  background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.6) 0%, rgba(8, 9, 12, 0.82) 70%), url('/images/collection-background.jpeg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -1114,7 +1114,7 @@ button.card:active:not(:disabled) {
   padding-right: var(--space-3);
   gap: var(--space-3);
   background-color: var(--charcoal);
-  background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.72) 0%, rgba(8, 9, 12, 0.8) 100%), url('/images/battlefield-background.jpg');
+  background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.72) 0%, rgba(8, 9, 12, 0.8) 100%), url('/images/battlefield-background.jpeg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -1975,7 +1975,7 @@ button.card:active:not(:disabled) {
   align-items: center;
   text-align: center;
   background-color: var(--charcoal);
-  background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.55) 0%, rgba(8, 9, 12, 0.82) 70%), url('/images/shop-background.jpg');
+  background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.55) 0%, rgba(8, 9, 12, 0.82) 70%), url('/images/shop-background.jpeg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
