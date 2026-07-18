@@ -84,6 +84,7 @@ export default function Collection({ collection, deck, onDeckChange, onBack }: C
             className={t === tribeFilter ? 'tribe-chip tribe-chip-active' : 'tribe-chip'}
             onClick={() => setTribeFilter(t)}
           >
+            {t !== 'All' && <img src={`/images/tribe-${t.toLowerCase()}.png`} alt="" className="tribe-chip-icon" />}
             {t}
           </button>
         ))}
