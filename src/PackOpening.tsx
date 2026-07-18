@@ -88,9 +88,7 @@ export default function PackOpening({ packsUnopened, reducedMotion, onPackOpened
       {phase === 'ready' && (
         <button type="button" className="pack-stage pack-stage-button" onClick={handleTapPack}>
           <div className="booster-pack-wrap">
-            <span className="booster-pack" aria-hidden="true">
-              📦
-            </span>
+            <img src="/images/booster-pack.png" alt="" className="booster-pack" />
           </div>
           <p className="pack-hint">Tap to open</p>
         </button>
@@ -105,9 +103,7 @@ export default function PackOpening({ packsUnopened, reducedMotion, onPackOpened
           <div className="booster-pack-wrap">
             <span className="pack-crack pack-crack-1" />
             <span className="pack-crack pack-crack-2" />
-            <span className="booster-pack" aria-hidden="true">
-              📦
-            </span>
+            <img src="/images/booster-pack.png" alt="" className="booster-pack" />
           </div>
         </div>
       )}
