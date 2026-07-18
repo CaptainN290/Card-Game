@@ -311,7 +311,7 @@ function BattleEndOverlay({ won, ownedCardIds, onChooseReward, onContinueAfterLo
 
   if (!won) {
     return (
-      <div className="modal-backdrop">
+      <div className="modal-backdrop defeat-backdrop">
         <div className="modal-content battle-end-content">
           <h2 className="battle-end-title battle-end-defeat">Defeat</h2>
           <p>Your forces were overwhelmed this time. Regroup and try again.</p>
@@ -325,7 +325,7 @@ function BattleEndOverlay({ won, ownedCardIds, onChooseReward, onContinueAfterLo
 
   if (resolved) {
     return (
-      <div className="modal-backdrop">
+      <div className="modal-backdrop victory-backdrop">
         <div className="modal-content battle-end-content">
           <h2 className="battle-end-title battle-end-victory">Reward Claimed</h2>
           {resolved.type === 'gold' && <p className="reward-reveal-text">+{resolved.goldAmount} Gold</p>}
@@ -344,7 +344,7 @@ function BattleEndOverlay({ won, ownedCardIds, onChooseReward, onContinueAfterLo
   }
 
   return (
-    <div className="modal-backdrop">
+    <div className="modal-backdrop victory-backdrop">
       <div className="modal-content battle-end-content">
         <h2 className="battle-end-title battle-end-victory">Victory!</h2>
         <p>Choose your reward:</p>
@@ -353,9 +353,7 @@ function BattleEndOverlay({ won, ownedCardIds, onChooseReward, onContinueAfterLo
             className="reward-choice-btn"
             onClick={() => setResolved({ type: 'gold', goldAmount: rollGoldReward() })}
           >
-            <span className="reward-icon" aria-hidden="true">
-              💰
-            </span>
+            <img src="/images/gold-icon.png" alt="" className="reward-icon" />
             <span>Gold</span>
           </button>
           <button
@@ -368,9 +366,7 @@ function BattleEndOverlay({ won, ownedCardIds, onChooseReward, onContinueAfterLo
             <span>New Card</span>
           </button>
           <button className="reward-choice-btn" onClick={() => setResolved({ type: 'pack' })}>
-            <span className="reward-icon" aria-hidden="true">
-              📦
-            </span>
+            <img src="/images/booster-pack.png" alt="" className="reward-icon" />
             <span>Booster Pack</span>
           </button>
         </div>
