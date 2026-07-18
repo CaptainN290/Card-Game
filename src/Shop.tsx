@@ -25,14 +25,12 @@ export default function Shop({ gold, onBuyPack, onBack }: ShopProps) {
       </header>
 
       <div className="shop-gold-display">
-        <span aria-hidden="true">💰</span> {gold} Gold
+        <img src="/images/gold-icon.png" alt="" className="icon-inline" /> {gold} Gold
       </div>
 
       <div className="shop-pack-card">
         <div className="shop-pack-glow" aria-hidden="true" />
-        <div className="shop-pack-art">
-          <span aria-hidden="true">📦</span>
-        </div>
+        <img src="/images/booster-pack.png" alt="Basic Booster Pack" className="shop-pack-art" />
         <h2 className="shop-pack-name">Basic Booster Pack</h2>
         <p className="shop-pack-desc">5 random cards. Duplicates allowed. Every card unlocked stays in your collection forever.</p>
 
@@ -56,7 +54,7 @@ export default function Shop({ gold, onBuyPack, onBack }: ShopProps) {
         </div>
 
         <div className="shop-pack-price">
-          <span aria-hidden="true">💰</span> {BASIC_PACK_PRICE} Gold
+          <img src="/images/gold-icon.png" alt="" className="icon-inline" /> {BASIC_PACK_PRICE} Gold
         </div>
 
         <button className="btn btn-primary btn-large" onClick={onBuyPack} disabled={!canAfford}>
