@@ -1,0 +1,2192 @@
+/* =============================================================================
+   HOLLOW SIGIL — stylesheet
+   =============================================================================
+   Phase 2 visual overhaul. Presentation only - no gameplay logic lives here.
+
+   No UI framework, no external fonts (everything stays offline-safe and
+   fast-loading - see the typography section for how headings get a fantasy
+   feel without a CDN font). Motion is CSS-only: transforms and opacity,
+   nothing that forces layout, so it stays smooth on mobile.
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   Reset
+   --------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  width: 100%;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+ul {
+  list-style: none;
+}
+
+input {
+  font: inherit;
+}
+
+/* ---------------------------------------------------------------------------
+   Design tokens
+   --------------------------------------------------------------------------- */
+
+:root {
+  /* Primary surfaces: charcoal / slate / navy, layered from darkest to lightest */
+  --void: #08090c;
+  --charcoal: #16181d;
+  --slate: #1c212b;
+  --navy: #171b2c;
+  --surface: #1d2129;
+  --surface-raised: #262b35;
+  --surface-hover: #303643;
+
+  /* Ink */
+  --ivory: #efe7d6;
+  --ink-muted: #a49d92;
+  --ink-dim: #6b665f;
+
+  /* Accents */
+  --gold: #c9a24a;
+  --gold-bright: #ecc978;
+  --gold-dim: #78591f;
+  --cyan: #5dd6d0;
+  --cyan-dim: #2f6e6c;
+  --violet: #9c6fdb;
+  --violet-dim: #4f3a72;
+  --crimson: #a5324a;
+  --crimson-bright: #d64f65;
+
+  /* Rarity (functional color-coding, tied to the accent palette above) */
+  --rarity-common: #9a9488;
+  --rarity-rare: #5fa8d8;
+  --rarity-epic: #9c6fdb;
+  --rarity-legendary: #c9a24a;
+
+  /* Tribes (two-stop gradients for card art windows) */
+  --tribe-beast-a: #1f2c1a;
+  --tribe-beast-b: #7fa85e;
+  --tribe-dragon-a: #33190f;
+  --tribe-dragon-b: #d4703f;
+  --tribe-machine-a: #20242b;
+  --tribe-machine-b: #7fa8ba;
+  --tribe-undead-a: #241a34;
+  --tribe-undead-b: #8f5fc9;
+  --tribe-mage-a: #191c48;
+  --tribe-mage-b: #6f6fe0;
+
+  /* Geometry */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Type */
+  --font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Serif system stack stands in for a licensed display face we can't fetch
+     from a CDN without breaking the "fully static, offline-safe" build.
+     Paired with wide tracking + small-caps, it reads as an old, carved,
+     ceremonial letterform rather than a default UI font. */
+  --font-display: ui-serif, Georgia, Cambria, 'Times New Roman', serif;
+}
+
+/* ---------------------------------------------------------------------------
+   Base / typography
+   --------------------------------------------------------------------------- */
+
+body {
+  background: var(--void);
+  color: var(--ivory);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.screen-header h1,
+.menu-subtitle,
+.section-subtitle,
+.pack-done-title,
+.battle-end-title,
+.tab {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Gold-leaf text treatment for the most important headings */
+.text-gilded {
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 55%, var(--gold-dim) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6));
+}
+
+/* ---------------------------------------------------------------------------
+   Atmosphere: layered, animated background used behind every screen
+   --------------------------------------------------------------------------- */
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.atmosphere::before {
+  /* base gradient wash: navy pooling at the bottom, charcoal/slate above */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, var(--slate), transparent 70%),
+    radial-gradient(ellipse 100% 70% at 50% 120%, var(--navy), var(--void) 70%);
+}
+
+.atmosphere-rays {
+  position: absolute;
+  top: -30%;
+  left: 50%;
+  width: 220%;
+  height: 160%;
+  transform: translateX(-50%) rotate(-2deg);
+  background: conic-gradient(
+    from 205deg at 50% 0%,
+    transparent 0deg,
+    rgba(201, 162, 74, 0.06) 8deg,
+    transparent 16deg,
+    transparent 344deg,
+    rgba(93, 214, 208, 0.05) 352deg,
+    transparent 360deg
+  );
+  mix-blend-mode: screen;
+  animation: rays-sway 26s ease-in-out infinite;
+}
+
+.atmosphere-fog {
+  position: absolute;
+  inset: -15%;
+  background:
+    radial-gradient(ellipse 42% 30% at 18% 82%, rgba(156, 111, 219, 0.1), transparent 70%),
+    radial-gradient(ellipse 50% 34% at 88% 22%, rgba(93, 214, 208, 0.07), transparent 70%),
+    radial-gradient(ellipse 38% 28% at 60% 95%, rgba(201, 162, 74, 0.06), transparent 70%);
+  filter: blur(50px);
+  animation: fog-drift 36s ease-in-out infinite alternate;
+}
+
+.atmosphere-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 100% 75% at 50% 40%, transparent 45%, rgba(0, 0, 0, 0.6) 100%);
+}
+
+.embers {
+  position: absolute;
+  inset: 0;
+}
+
+.ember {
+  position: absolute;
+  bottom: -5%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--gold-bright);
+  box-shadow: 0 0 6px 1px var(--gold-bright);
+  opacity: 0;
+  animation: ember-rise 14s linear infinite;
+}
+
+.ember:nth-child(1) {
+  left: 6%;
+  animation-delay: 0s;
+  animation-duration: 15s;
+}
+.ember:nth-child(2) {
+  left: 16%;
+  animation-delay: 2.4s;
+  animation-duration: 12s;
+  background: var(--cyan);
+  box-shadow: 0 0 6px 1px var(--cyan);
+}
+.ember:nth-child(3) {
+  left: 28%;
+  animation-delay: 5s;
+  animation-duration: 17s;
+}
+.ember:nth-child(4) {
+  left: 40%;
+  animation-delay: 1s;
+  animation-duration: 13s;
+  background: var(--violet);
+  box-shadow: 0 0 6px 1px var(--violet);
+}
+.ember:nth-child(5) {
+  left: 52%;
+  animation-delay: 7s;
+  animation-duration: 16s;
+}
+.ember:nth-child(6) {
+  left: 64%;
+  animation-delay: 3.2s;
+  animation-duration: 14s;
+  background: var(--cyan);
+  box-shadow: 0 0 6px 1px var(--cyan);
+}
+.ember:nth-child(7) {
+  left: 74%;
+  animation-delay: 8.5s;
+  animation-duration: 18s;
+}
+.ember:nth-child(8) {
+  left: 84%;
+  animation-delay: 4.2s;
+  animation-duration: 12.5s;
+  background: var(--violet);
+  box-shadow: 0 0 6px 1px var(--violet);
+}
+.ember:nth-child(9) {
+  left: 92%;
+  animation-delay: 6.2s;
+  animation-duration: 15.5s;
+}
+.ember:nth-child(10) {
+  left: 48%;
+  animation-delay: 10s;
+  animation-duration: 13.5s;
+}
+
+/* ---------------------------------------------------------------------------
+   App shell
+   --------------------------------------------------------------------------- */
+
+.app-shell {
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5) var(--space-4) var(--space-6);
+  gap: var(--space-4);
+  min-height: 100dvh;
+  animation: screen-enter 420ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.screen-header h1 {
+  font-size: 1.1rem;
+  color: var(--ivory);
+}
+
+/* =============================================================================
+   Buttons — carved stone / engraved metal, not flat rectangles
+   ============================================================================= */
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 12px 22px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease, opacity 140ms ease;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  filter: grayscale(0.4);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.96) translateY(1px);
+}
+
+.btn-large {
+  width: 100%;
+  min-height: 54px;
+  font-size: 1rem;
+}
+
+/* Engraved metal: gold gradient face, bevel via inset highlight (top) + inset
+   shadow (bottom), plus an outer glow that blooms on press. */
+.btn-primary {
+  background: linear-gradient(160deg, var(--gold-bright), var(--gold) 55%, var(--gold-dim));
+  color: #23170a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.35),
+    0 6px 18px rgba(201, 162, 74, 0.28);
+}
+
+.btn-primary:active:not(:disabled) {
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.25),
+    0 2px 8px rgba(201, 162, 74, 0.3);
+}
+
+/* Carved stone: dark slate face, subtle top highlight like light on a rim */
+.btn-secondary {
+  background: linear-gradient(160deg, var(--surface-hover), var(--surface-raised));
+  color: var(--ivory);
+  border: 1px solid rgba(239, 231, 214, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.btn-secondary:active:not(:disabled) {
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.btn-accent {
+  background: linear-gradient(160deg, #b48ae8, var(--violet) 60%, var(--violet-dim));
+  color: #150c22;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.35),
+    0 6px 18px rgba(156, 111, 219, 0.3);
+}
+
+.btn-accent:active:not(:disabled) {
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(156, 111, 219, 0.3);
+}
+
+.btn-danger {
+  background: rgba(165, 50, 74, 0.16);
+  color: var(--crimson-bright);
+  border: 1px solid rgba(165, 50, 74, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.btn-danger:active:not(:disabled) {
+  background: rgba(165, 50, 74, 0.26);
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(160deg, var(--surface-hover), var(--surface-raised));
+  border: 1px solid rgba(239, 231, 214, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -2px 3px rgba(0, 0, 0, 0.4);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.btn-icon:active {
+  transform: scale(0.92);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.btn-small {
+  padding: 8px 14px;
+  min-height: 36px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(160deg, var(--surface-hover), var(--surface-raised));
+  border: 1px solid rgba(239, 231, 214, 0.08);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* =============================================================================
+   Tabs
+   ============================================================================= */
+
+.tab-bar {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid rgba(239, 231, 214, 0.06);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  gap: 4px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  text-align: center;
+  transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+.tab-active {
+  background: linear-gradient(160deg, var(--surface-hover), var(--surface-raised));
+  color: var(--gold-bright);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* =============================================================================
+   Modals
+   ============================================================================= */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 4, 6, 0.82);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  z-index: 50;
+  animation: fade-in 220ms ease-out;
+}
+
+.victory-backdrop {
+  background-color: rgba(4, 4, 6, 0.9);
+  background-image: linear-gradient(180deg, rgba(4, 4, 6, 0.55) 0%, rgba(4, 4, 6, 0.75) 100%), url('/images/victory-background.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.defeat-backdrop {
+  background-color: rgba(4, 4, 6, 0.9);
+  background-image: linear-gradient(180deg, rgba(4, 4, 6, 0.6) 0%, rgba(4, 4, 6, 0.8) 100%), url('/images/defeat-background.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.modal-content {
+  background: linear-gradient(180deg, var(--surface-raised), var(--surface));
+  border: 1px solid rgba(201, 162, 74, 0.25);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  max-width: 360px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+  animation: scale-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.15);
+  max-height: 85dvh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.modal-content .card {
+  width: 200px;
+}
+
+/* =============================================================================
+   Card component — the signature visual element
+   =============================================================================
+   Opposite corners are cut on the diagonal (clip-path), so the card reads as
+   a carved artifact rather than a rounded rectangle. A thin inner hairline
+   plus small corner gems give it the "detailed fantasy frame" the brief asks
+   for, all without any image assets. Rarity sets the border/glow color;
+   tribe sets the art-window gradient - both are functional information in a
+   real TCG, not decoration.
+   ============================================================================= */
+
+.card {
+  position: relative;
+  width: 132px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(165deg, var(--surface-raised), var(--surface));
+  border: 1.5px solid var(--rarity-common);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  gap: 6px;
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.3, 1), box-shadow 200ms ease, border-color 200ms ease;
+}
+
+/* Inner hairline, inset from the outer border, reinforcing the "engraved
+   frame" feel. Purely decorative, sits above the art but below text. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(239, 231, 214, 0.12);
+  border-radius: calc(var(--radius-md) - 5px);
+  pointer-events: none;
+}
+
+button.card {
+  cursor: pointer;
+}
+
+button.card:hover:not(:disabled) {
+  transform: translateY(-3px);
+}
+
+button.card:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.card-compact {
+  width: 84px;
+  padding: 5px;
+  gap: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.card-compact::before {
+  inset: 3px;
+  border-radius: calc(var(--radius-sm) - 3px);
+}
+
+.card-disabled {
+  opacity: 0.4;
+  filter: grayscale(0.6);
+}
+
+/* Selected: lifts and enlarges slightly - the "picked up" feel the brief
+   asks for, without a full drag-and-drop rewrite of the interaction model
+   (selection is still tap-to-select, tap-target-to-play). No rotation here
+   any more - it read as a rendering glitch rather than a tilt at small
+   sizes, and it's what pushed selected cards into their neighbors. */
+.card-selected {
+  transform: translateY(-14px) scale(1.08);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--gold-bright);
+  z-index: 5;
+}
+
+.card-rarity-common {
+  border-color: var(--rarity-common);
+}
+
+.card-rarity-rare {
+  border-color: var(--rarity-rare);
+  box-shadow: 0 0 14px rgba(95, 168, 216, 0.28);
+}
+
+.card-rarity-epic {
+  border-color: var(--rarity-epic);
+  box-shadow: 0 0 16px rgba(156, 111, 219, 0.32);
+}
+
+.card-rarity-legendary {
+  border-color: var(--rarity-legendary);
+  box-shadow: 0 0 20px rgba(201, 162, 74, 0.42);
+  animation: legendary-glow 2.6s ease-in-out infinite;
+}
+
+.card-owned-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: var(--void);
+  border: 1px solid rgba(239, 231, 214, 0.18);
+  border-radius: var(--radius-pill);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  z-index: 2;
+  color: var(--ivory);
+}
+
+/* Cost badge: a faceted crystal instead of a plain circle */
+.card-cost-badge {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 30px;
+  height: 30px;
+  clip-path: polygon(50% 0%, 100% 35%, 82% 100%, 18% 100%, 0% 35%);
+  background: radial-gradient(circle at 35% 25%, var(--cyan), var(--cyan-dim) 75%);
+  color: #06201f;
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 3px;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.card-compact .card-cost-badge {
+  width: 20px;
+  height: 20px;
+  font-size: 0.62rem;
+  top: -7px;
+  left: -7px;
+  padding-bottom: 2px;
+}
+
+.card-art {
+  position: relative;
+  aspect-ratio: 1.1 / 1;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Subtle vignette + top sheen inside the art window so flat CSS gradients
+   read as lit, not flat */
+.card-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 40%),
+    radial-gradient(ellipse 90% 70% at 50% 110%, rgba(0, 0, 0, 0.45), transparent 60%);
+  pointer-events: none;
+}
+
+.card-art-locked {
+  background: var(--surface);
+  border: 1px dashed var(--ink-dim);
+}
+
+.card-locked-icon {
+  font-size: 1.6rem;
+  color: var(--ink-dim);
+  font-weight: 700;
+}
+
+.card-icon {
+  font-size: 2.4rem;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+  position: relative;
+  z-index: 1;
+}
+
+.card-compact .card-icon {
+  font-size: 1.5rem;
+}
+
+.tribe-beast {
+  background: linear-gradient(150deg, var(--tribe-beast-a), var(--tribe-beast-b));
+}
+
+.tribe-dragon {
+  background: linear-gradient(150deg, var(--tribe-dragon-a), var(--tribe-dragon-b));
+}
+
+.tribe-machine {
+  background: linear-gradient(150deg, var(--tribe-machine-a), var(--tribe-machine-b));
+}
+
+.tribe-undead {
+  background: linear-gradient(150deg, var(--tribe-undead-a), var(--tribe-undead-b));
+}
+
+.tribe-mage {
+  background: linear-gradient(150deg, var(--tribe-mage-a), var(--tribe-mage-b));
+}
+
+.card-name {
+  font-family: var(--font-display);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.2;
+  min-height: 1.9em;
+  letter-spacing: 0.01em;
+}
+
+.card-locked .card-name {
+  text-align: center;
+  color: var(--ink-dim);
+  min-height: auto;
+  font-family: var(--font-body);
+}
+
+.card-compact .card-name {
+  font-size: 0.6rem;
+  min-height: 1.4em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-tribe {
+  font-size: 0.6rem;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card-description {
+  font-size: 0.67rem;
+  color: var(--ink-muted);
+  line-height: 1.3;
+  font-style: italic;
+  flex: 1;
+}
+
+.card-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding-top: 4px;
+  border-top: 1px solid rgba(239, 231, 214, 0.1);
+}
+
+.card-compact .card-stats {
+  font-size: 0.65rem;
+  padding-top: 2px;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.stat-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.card-compact .stat-icon {
+  width: 9px;
+  height: 9px;
+}
+
+.card-attack {
+  color: var(--gold-bright);
+}
+
+.card-health {
+  color: #8bd6a0;
+}
+
+.card-health-damaged {
+  color: var(--crimson-bright);
+}
+
+.card-health-damaged .stat-icon {
+  animation: damaged-pulse 1s ease-in-out infinite;
+}
+
+/* =============================================================================
+   Menu screen — cinematic hero with the Hollow Sigil emblem
+   ============================================================================= */
+
+.menu-screen {
+  justify-content: space-between;
+  background-color: var(--void);
+  background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.55) 0%, rgba(8, 9, 12, 0.72) 55%, rgba(8, 9, 12, 0.92) 100%),
+    url('/images/menu-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.menu-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.menu-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(29, 33, 41, 0.6);
+  border: 1px solid rgba(239, 231, 214, 0.08);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+}
+
+.menu-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  margin-top: var(--space-5);
+}
+
+.game-logo {
+  width: min(320px, 84vw);
+  height: auto;
+  filter: drop-shadow(0 8px 24px rgba(201, 162, 74, 0.35));
+  animation: sigil-breathe 5s ease-in-out infinite;
+}
+
+.sigil-emblem {
+  width: 88px;
+  height: 88px;
+  filter: drop-shadow(0 8px 24px rgba(201, 162, 74, 0.35));
+  animation: sigil-breathe 5s ease-in-out infinite;
+}
+
+.menu-title {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.menu-subtitle {
+  color: var(--cyan);
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.menu-hint {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  margin-top: calc(-1 * var(--space-2));
+}
+
+/* Menu buttons backed by generated artwork: the banner + icon are baked
+   into the image, so the button's own background/border/shadow are
+   switched off and the text label is shifted right so it doesn't sit on
+   top of the icon (which `background-position` keeps centered). */
+.menu-btn-image {
+  position: relative;
+  border-radius: 0;
+  min-height: 64px;
+  background-color: transparent;
+  background-image: var(--menu-btn-art);
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: none;
+  box-shadow: none;
+  justify-content: flex-end;
+  padding-right: 15%;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.menu-btn-image:active:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.menu-btn-image:disabled {
+  filter: grayscale(0.5);
+}
+
+.menu-btn-play {
+  --menu-btn-art: url('/images/btn-play.png');
+  color: #241a08;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.25);
+}
+
+.menu-btn-shop {
+  --menu-btn-art: url('/images/btn-shop.png');
+  color: var(--ivory);
+}
+
+.menu-btn-collection {
+  --menu-btn-art: url('/images/btn-collection.png');
+  color: var(--ivory);
+}
+
+.menu-btn-settings {
+  --menu-btn-art: url('/images/btn-settings.png');
+  color: var(--ivory);
+}
+
+/* =============================================================================
+   Collection + Deck Builder — premium binder feel
+   ============================================================================= */
+
+.collection-screen {
+  background-color: var(--charcoal);
+  background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.6) 0%, rgba(8, 9, 12, 0.82) 70%), url('/images/collection-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.collection-progress,
+.deck-size {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.deck-size-complete {
+  color: #8bd6a0;
+}
+
+.card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: flex-start;
+  background: linear-gradient(180deg, rgba(29, 33, 41, 0.4), transparent);
+  border: 1px solid rgba(239, 231, 214, 0.05);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.deck-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.deck-list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: linear-gradient(160deg, var(--surface-raised), var(--surface));
+  border: 1px solid rgba(239, 231, 214, 0.06);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+}
+
+.empty-hint {
+  color: var(--ink-dim);
+  font-size: 0.85rem;
+  padding: var(--space-4) 0;
+  text-align: center;
+}
+
+.section-subtitle {
+  font-size: 0.78rem;
+  color: var(--gold-bright);
+  margin-top: var(--space-2);
+}
+
+/* =============================================================================
+   Settings
+   ============================================================================= */
+
+.settings-section {
+  background: linear-gradient(160deg, var(--surface-raised), var(--surface));
+  border: 1px solid rgba(239, 231, 214, 0.06);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.settings-row input[type='checkbox'] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--gold);
+}
+
+.settings-description {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+.confirm-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.confirm-box p {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+.confirm-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.confirm-actions .btn {
+  flex: 1;
+}
+
+.settings-version {
+  text-align: center;
+  color: var(--ink-dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  margin-top: auto;
+}
+
+/* =============================================================================
+   Battle screen
+   ============================================================================= */
+
+.battle-screen {
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+  gap: var(--space-3);
+  background-color: var(--charcoal);
+  background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.72) 0%, rgba(8, 9, 12, 0.8) 100%), url('/images/battlefield-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hp-energy-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.side-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+  width: 42px;
+  flex-shrink: 0;
+}
+
+.hp-bar-track {
+  position: relative;
+  flex: 1;
+  height: 13px;
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  border: 1px solid rgba(239, 231, 214, 0.08);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.4);
+}
+
+.hp-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width 500ms ease-out;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.hp-bar-enemy {
+  background: linear-gradient(90deg, var(--crimson), var(--crimson-bright));
+}
+
+.hp-bar-player {
+  background: linear-gradient(90deg, #3f8a53, #8bd6a0);
+}
+
+.hp-value {
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: 52px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lane row: engraved stone floor with separators between lanes.
+   `minmax(0, 1fr)` (not bare `1fr`) is the fix for the board-resizing bug -
+   grid tracks default to a minimum of `auto`, which means a column won't
+   shrink below its content's natural size. Without the explicit 0 minimum,
+   an occupied lane's card content forced that lane's column wider than an
+   equal fifth, which starved the other four columns and pushed empty lanes
+   off-screen. With `minmax(0, 1fr)` every column is forced to an equal
+   share of the row no matter what's inside it. */
+.lane-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  max-width: 100%;
+  padding: 8px 6px;
+  background:
+    repeating-linear-gradient(90deg, transparent, transparent calc(20% - 1px), rgba(239, 231, 214, 0.05) calc(20% - 1px), rgba(239, 231, 214, 0.05) 20%),
+    linear-gradient(180deg, rgba(29, 33, 41, 0.55), rgba(8, 9, 12, 0.35));
+  border: 1px solid rgba(239, 231, 214, 0.06);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.lane-slot {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  aspect-ratio: 0.72 / 1;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  overflow: hidden;
+}
+
+.lane-empty {
+  border: 1.5px dashed rgba(239, 231, 214, 0.14);
+  background-color: var(--surface);
+  background-image: url('/images/empty-lane.png');
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--radius-sm);
+}
+
+.lane-occupied {
+  border: 1.5px solid transparent;
+}
+
+.lane-targetable {
+  border-color: var(--gold-bright);
+  border-style: solid;
+  box-shadow: inset 0 0 0 2px rgba(201, 162, 74, 0.5), 0 0 14px rgba(201, 162, 74, 0.4);
+  animation: target-pulse 1s ease-in-out infinite;
+  cursor: pointer;
+}
+
+.lane-attacking {
+  animation: lane-flash 550ms ease-out;
+}
+
+.lane-slot .card,
+.lane-slot .card-compact {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  flex-shrink: 1;
+}
+
+/* Card placement: since React mounts a brand-new element when a lane goes
+   from empty to occupied, a plain mount animation here plays exactly once
+   per placement with no extra JS state needed. */
+.lane-occupied .card-compact {
+  animation: card-place-in 320ms cubic-bezier(0.2, 0.8, 0.3, 1.1);
+}
+
+/* Monster mid-destruction: still rendered from the pre-combat state, but
+   visually dissolving before the real board state updates underneath it */
+.lane-dissolving .card {
+  animation: dissolve 620ms ease-in forwards;
+}
+
+.battle-center {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.turn-indicator {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gold-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.energy-pips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-left: 50px;
+}
+
+.pip {
+  width: 12px;
+  height: 12px;
+  clip-path: polygon(50% 0%, 100% 35%, 82% 100%, 18% 100%, 0% 35%);
+  background: var(--surface);
+  border: 1.5px solid var(--ink-dim);
+  flex-shrink: 0;
+}
+
+.pip-filled {
+  background: radial-gradient(circle at 35% 30%, var(--cyan), var(--cyan-dim));
+  border-color: var(--cyan);
+  box-shadow: 0 0 6px rgba(93, 214, 208, 0.6);
+}
+
+.player-status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.enemy-status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.hand-row {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 26px 4px 12px;
+  scroll-snap-type: x proximity;
+  min-height: 210px;
+}
+
+.hand-row .card {
+  scroll-snap-align: start;
+}
+
+.end-turn-btn {
+  position: sticky;
+  bottom: var(--space-3);
+}
+
+/* Floating damage numbers */
+.damage-number {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--crimson-bright);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  z-index: 10;
+  animation: damage-float 700ms ease-out forwards;
+}
+
+.damage-number-face {
+  position: absolute;
+  top: -22px;
+  right: 4px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--crimson-bright);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  z-index: 10;
+  animation: damage-float 700ms ease-out forwards;
+}
+
+.battle-log-drawer {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  max-height: 45dvh;
+  background: linear-gradient(180deg, var(--surface-raised), var(--surface));
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+  border: 1px solid rgba(239, 231, 214, 0.1);
+  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  animation: slide-up 240ms ease-out;
+}
+
+.battle-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid rgba(239, 231, 214, 0.08);
+}
+
+.battle-log-list {
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.battle-log-list li {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+/* --- Victory / defeat overlay --- */
+
+.battle-end-content {
+  gap: var(--space-3);
+}
+
+.battle-end-title {
+  font-size: 1.35rem;
+}
+
+.battle-end-victory {
+  color: var(--gold-bright);
+}
+
+.battle-end-defeat {
+  color: var(--crimson-bright);
+}
+
+.reward-reveal-text {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--gold-bright);
+}
+
+.reward-choices {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.reward-choice-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-2);
+  background: linear-gradient(160deg, var(--surface-hover), var(--surface-raised));
+  border: 1px solid rgba(239, 231, 214, 0.1);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: background 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+.reward-choice-btn:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 16px rgba(201, 162, 74, 0.25);
+}
+
+.reward-choice-btn:active {
+  transform: scale(0.95);
+}
+
+.reward-icon {
+  font-size: 1.8rem;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+/* Small currency/stat icon sized to sit inline with text (menu gold count,
+   shop price, etc.) */
+.icon-inline {
+  width: 1.05em;
+  height: 1.05em;
+  object-fit: contain;
+  vertical-align: -0.2em;
+  margin-right: 0.15em;
+}
+
+/* =============================================================================
+   Pack opening — the most elaborate sequence in the game
+   ============================================================================= */
+
+.pack-opening-screen {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+
+.pack-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  transition: transform 500ms ease-out;
+}
+
+.pack-stage-button {
+  width: 100%;
+}
+
+.pack-zooming {
+  transform: scale(1.15);
+}
+
+.booster-pack-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.booster-pack {
+  width: 220px;
+  max-width: 60vw;
+  height: auto;
+  filter: drop-shadow(0 12px 28px rgba(201, 162, 74, 0.35));
+  animation: pack-breathe 3s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+}
+
+.pack-hint {
+  color: var(--ink-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pack-shaking .booster-pack {
+  animation: pack-shake 0.14s ease-in-out infinite;
+}
+
+.pack-shaking .pack-crack {
+  opacity: 1;
+}
+
+.pack-crack {
+  position: absolute;
+  z-index: 3;
+  background: var(--gold-bright);
+  box-shadow: 0 0 12px 3px var(--gold-bright), 0 0 24px 6px rgba(93, 214, 208, 0.5);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.pack-crack-1 {
+  top: 30%;
+  left: 45%;
+  width: 2px;
+  height: 40%;
+  transform: rotate(12deg);
+  animation: crack-flicker 0.4s ease-in-out infinite;
+}
+
+.pack-crack-2 {
+  top: 20%;
+  left: 55%;
+  width: 2px;
+  height: 30%;
+  transform: rotate(-18deg);
+  animation: crack-flicker 0.5s ease-in-out infinite reverse;
+}
+
+.pack-bursting .booster-pack {
+  animation: pack-burst 0.45s cubic-bezier(0.3, 0, 0.7, 1) forwards;
+}
+
+.pack-burst-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, rgba(255, 250, 230, 0.95), rgba(201, 162, 74, 0.4) 40%, transparent 70%);
+  z-index: 30;
+  pointer-events: none;
+  animation: burst-flash 550ms ease-out forwards;
+}
+
+.reveal-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.reveal-stage-button {
+  width: 100%;
+}
+
+.reveal-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.reveal-slot {
+  perspective: 800px;
+}
+
+.reveal-slot-shown .card {
+  animation: card-fly-in 520ms cubic-bezier(0.2, 0.8, 0.3, 1.1);
+}
+
+.reveal-slot-shown.reveal-slot-rare .card {
+  animation: card-fly-in 520ms cubic-bezier(0.2, 0.8, 0.3, 1.1), rare-shimmer 1.6s ease-in-out 520ms 2;
+}
+
+.reveal-slot-shown.reveal-slot-legendary .card {
+  animation: card-fly-in 520ms cubic-bezier(0.2, 0.8, 0.3, 1.1), legendary-reveal-glow 1.8s ease-in-out 520ms 3;
+}
+
+.pack-done-title {
+  font-size: 1.3rem;
+  color: var(--gold-bright);
+}
+
+.pack-done-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  margin-top: var(--space-3);
+}
+
+/* =============================================================================
+   Keyframes
+   ============================================================================= */
+
+@keyframes screen-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rays-sway {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(-2deg);
+  }
+  50% {
+    transform: translateX(-50%) rotate(2deg);
+  }
+}
+
+@keyframes fog-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(3%, -2%) scale(1.06);
+  }
+}
+
+@keyframes ember-rise {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.7;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(18px);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translate(-50%, 100%);
+  }
+  to {
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes legendary-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 14px rgba(201, 162, 74, 0.38);
+  }
+  50% {
+    box-shadow: 0 0 26px rgba(201, 162, 74, 0.65);
+  }
+}
+
+@keyframes damaged-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes sigil-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 8px 24px rgba(201, 162, 74, 0.35));
+  }
+  50% {
+    transform: scale(1.04);
+    filter: drop-shadow(0 8px 30px rgba(201, 162, 74, 0.5));
+  }
+}
+
+@keyframes target-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(201, 162, 74, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(201, 162, 74, 0.55);
+  }
+}
+
+@keyframes lane-flash {
+  0% {
+    background: rgba(201, 162, 74, 0);
+  }
+  35% {
+    background: rgba(201, 162, 74, 0.35);
+  }
+  100% {
+    background: rgba(201, 162, 74, 0);
+  }
+}
+
+@keyframes card-place-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.55) translateY(10px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes dissolve {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0) brightness(1);
+  }
+  40% {
+    opacity: 0.8;
+    filter: blur(1px) brightness(1.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.85) translateY(6px);
+    filter: blur(6px) brightness(1.8);
+  }
+}
+
+@keyframes damage-float {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(0) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-6px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-30px) scale(1);
+  }
+}
+
+@keyframes pack-breathe {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.04) translateY(-4px);
+  }
+}
+
+@keyframes pack-shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  20% {
+    transform: translateX(-8px) rotate(-4deg);
+  }
+  40% {
+    transform: translateX(8px) rotate(4deg);
+  }
+  60% {
+    transform: translateX(-6px) rotate(-3deg);
+  }
+  80% {
+    transform: translateX(6px) rotate(3deg);
+  }
+}
+
+@keyframes crack-flicker {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes pack-burst {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+@keyframes burst-flash {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes card-fly-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) translateY(40px) rotateY(-90deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06) translateY(-4px) rotateY(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotateY(0deg);
+  }
+}
+
+@keyframes rare-shimmer {
+  0%,
+  100% {
+    box-shadow: 0 0 14px rgba(95, 168, 216, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(95, 168, 216, 0.6);
+  }
+}
+
+@keyframes legendary-reveal-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(201, 162, 74, 0.42);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(201, 162, 74, 0.8);
+    transform: scale(1.05);
+  }
+}
+
+/* =============================================================================
+   Responsive tweaks
+   ============================================================================= */
+
+@media (min-width: 400px) {
+  .card {
+    width: 140px;
+  }
+}
+
+@media (max-width: 340px) {
+  .card {
+    width: 118px;
+  }
+  .card-compact {
+    width: 72px;
+  }
+}
+
+/* =============================================================================
+   Accessibility: respect OS-level reduced motion in addition to the in-app
+   "Reduced Motion" setting (which shortens the JS-driven timeouts directly).
+   ============================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* In-app "Reduced Motion" setting also freezes the decorative atmosphere,
+   independent of the OS-level prefers-reduced-motion query above. */
+.atmosphere-reduced .atmosphere-rays,
+.atmosphere-reduced .atmosphere-fog,
+.atmosphere-reduced .ember {
+  animation: none;
+}
+
+/* Collection inspection modal header */
+.inspect-rarity {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.inspect-rarity-common {
+  color: var(--rarity-common);
+}
+.inspect-rarity-rare {
+  color: var(--rarity-rare);
+}
+.inspect-rarity-epic {
+  color: var(--rarity-epic);
+}
+.inspect-rarity-legendary {
+  color: var(--rarity-legendary);
+}
+
+.inspect-owned {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+
+/* =============================================================================
+   Shop
+   ============================================================================= */
+
+.shop-screen {
+  align-items: center;
+  text-align: center;
+  background-color: var(--charcoal);
+  background-image: linear-gradient(180deg, rgba(8, 9, 12, 0.55) 0%, rgba(8, 9, 12, 0.82) 70%), url('/images/shop-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.shop-gold-display {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(160deg, var(--surface-hover), var(--surface-raised));
+  border: 1px solid rgba(201, 162, 74, 0.3);
+  border-radius: var(--radius-pill);
+  padding: 8px 18px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--gold-bright);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.shop-pack-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 320px;
+  margin: var(--space-4) auto 0;
+  padding: var(--space-5) var(--space-4);
+  background: linear-gradient(180deg, var(--surface-raised), var(--surface));
+  border: 1px solid rgba(201, 162, 74, 0.25);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.shop-pack-glow {
+  position: absolute;
+  top: -30%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(201, 162, 74, 0.28), transparent 70%);
+  animation: shop-glow-pulse 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.shop-pack-art {
+  position: relative;
+  width: 170px;
+  max-width: 60%;
+  height: auto;
+  filter: drop-shadow(0 10px 20px rgba(201, 162, 74, 0.35));
+  animation: pack-breathe 3s ease-in-out infinite;
+}
+
+.shop-pack-name {
+  position: relative;
+  font-size: 1.15rem;
+}
+
+.shop-pack-desc {
+  position: relative;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+
+.shop-pack-odds {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  background: rgba(8, 9, 12, 0.35);
+  border: 1px solid rgba(239, 231, 214, 0.06);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+}
+
+.shop-odds-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.shop-odds-label {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.shop-odds-common {
+  color: var(--rarity-common);
+}
+.shop-odds-rare {
+  color: var(--rarity-rare);
+}
+.shop-odds-epic {
+  color: var(--rarity-epic);
+}
+.shop-odds-legendary {
+  color: var(--rarity-legendary);
+}
+
+.shop-pack-price {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--gold-bright);
+}
+
+.shop-hint {
+  position: relative;
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+}
+
+@keyframes shop-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.15);
+  }
+}
+
+/* =============================================================================
+   Tribe filter chips (Collection)
+   ============================================================================= */
+
+.tribe-filter-bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.tribe-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(160deg, var(--surface-hover), var(--surface-raised));
+  border: 1px solid rgba(239, 231, 214, 0.08);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+.tribe-chip-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.tribe-chip:active {
+  transform: scale(0.94);
+}
+
+.tribe-chip-active {
+  color: var(--gold-bright);
+  border-color: rgba(201, 162, 74, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 12px rgba(201, 162, 74, 0.18);
+}
+
+/* =============================================================================
+   General polish pass: shadows, spacing, and interactive feedback
+   ============================================================================= */
+
+/* Cards in any grid get a gentle mount-in instead of popping into existence */
+.card-grid .card {
+  animation: card-grid-in 260ms ease-out;
+}
+
+@keyframes card-grid-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slightly deeper, softer shadow language across raised surfaces */
+.settings-section,
+.deck-list-row,
+.card-grid {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+}
+
+.btn-secondary,
+.btn-icon,
+.btn-small,
+.tab-active,
+.reward-choice-btn {
+  transition: background 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
